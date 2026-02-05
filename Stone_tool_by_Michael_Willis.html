@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stone tool by Michael Willis - https://mwillis.global</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #443e3e; 
+            font-family: Arial, Helvetica, sans-serif; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        a{color: #aca2a2;
+        }
+        
+        #ui { 
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            z-index: 10; 
+            background: #000000; 
+            padding: 16px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            width: 260px; 
+            border: 1px solid #111;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        h1 { margin: 0 0 2px 0; font-size: 1rem; color: #000; letter-spacing: -0.02em; font-weight: 800; text-transform: uppercase; }
+        p { font-size: 0.65rem; color: #777; margin-bottom: 12px; line-height: 1.2; }
+        
+        .section-container {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 0.65rem;
+            color: #000;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .controls { display: flex; flex-direction: column; gap: 4px; }
+        .control-group { display: flex; flex-direction: column; }
+        
+        .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px; }
+        label { font-size: 0.5rem; text-transform: uppercase; color: #888; letter-spacing: 0.02em; font-weight: 700; }
+        .marker { font-size: 0.55rem; color: #fff; font-weight: 900; background: #000; padding: 1px 4px; border-radius: 3px; min-width: 10px; text-align: center; }
+
+        button { 
+            background: #a3a3a3; 
+            color: #000000; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+            font-weight: 800; 
+            transition: all 0.2s; 
+            width: 100%; 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+        }
+        button:hover { background: #333; transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+        
+        input[type="range"] { width: 100%; accent-color: #000; cursor: pointer; margin-bottom: 2px; }
+        
+        #canvas-container {
+            background: white;
+            box-shadow: 0 0 100px rgba(0,0,0,0.6);
+            border: 8px solid white;
+            line-height: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        canvas {
+            max-width: 85vw;
+            max-height: 85vh;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">        
+        <button id="generateBtn">Carve New Stone</button>
+
+        <!-- SECTION 1: STONE -->
+        <div class="section-container">
+            <div class="section-title"><span>Stone</span></div>
+            <div class="controls">
+                <div class="control-group">
+                    <div class="label-row"><label>Scale</label><span class="marker" id="val_stoneScale">1</span></div>
+                    <input type="range" id="stoneScaleSlider" min="1" max="10" step="1" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Detail</label><span class="marker" id="val_stoneDetail">1</span></div>
+                    <input type="range" id="stoneDetailSlider" min="1" max="10" step="1" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Weight</label><span class="marker" id="val_stoneWeight">3</span></div>
+                    <input type="range" id="stoneWeightSlider" min="1" max="10" step="1" value="3">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Erosion</label><span class="marker" id="val_bedrockErosion">1</span></div>
+                    <input type="range" id="bedrockErosionSlider" min="1" max="10" step="1" value="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: MARKINGS -->
+        <div class="section-container">
+            <div class="section-title"><span>Markings</span></div>
+            <div class="controls">
+                  <div class="control-group">
+                    <div class="label-row"><label>Scale</label><span class="marker" id="val_markingScale">4</span></div>
+                    <input type="range" id="markingScaleSlider" min="1" max="10" step="1" value="4">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Density</label><span class="marker" id="val_density">3</span></div>
+                    <input type="range" id="densitySlider" min="1" max="10" step="1" value="3">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Weight</label><span class="marker" id="val_markingWeight">4</span></div>
+                    <input type="range" id="markingWeightSlider" min="1" max="10" step="1" value="4">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Erosion</label><span class="marker" id="val_artifactErosion">1</span></div>
+                    <input type="range" id="artifactErosionSlider" min="1" max="10" step="1" value="1">
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: CONNECTION -->
+        <div class="section-container">
+            <div class="section-title"><span>Connection</span></div>
+            <div class="controls">
+                <div class="control-group">
+                    <div class="label-row"><label>Density</label><span class="marker" id="val_connDensity">1</span></div>
+                    <input type="range" id="connDensitySlider" min="1" max="10" step="1" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Detail</label><span class="marker" id="val_connDetail">1</span></div>
+                    <input type="range" id="connDetailSlider" min="1" max="10" step="1" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Weight</label><span class="marker" id="val_connWeight">1</span></div>
+                    <input type="range" id="connWeightSlider" min="1" max="10" step="1" value="1">
+                </div>
+                <div class="control-group">
+                    <div class="label-row"><label>Erosion</label><span class="marker" id="val_linkErosion">1</span></div>
+                    <input type="range" id="linkErosionSlider" min="1" max="10" step="1" value="1">
+                </div>
+            </div>
+        </div>
+
+        <button id="downloadBtn">Export PNG</button>
+        <p>Stone tool by Michael Willis<br><a href="https://mwillis.global" target="_blank">https://mwillis.global</a></p>
+
+    </div>
+
+    <div id="canvas-container">
+        <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        const settings = {
+            stoneScale: 0.1, stoneDetail: 0.1, stoneWeight: 3, bedrockErosion: 1,
+            density: 3, markingScale: 4, markingWeight: 4, artifactErosion: 1,
+            connDensity: 1, connDetail: 1, connWeight: 1, linkErosion: 1,
+            safetyPadding: 260 
+        };
+
+        // Multi-octave organic noise for artifacts and organic variations
+        function smoothOrganicNoise(angle, seed) {
+            const n1 = Math.sin(angle * 2.12 + seed) * 0.5;
+            const n2 = Math.cos(angle * 3.45 - seed * 0.7) * 0.25;
+            const n3 = Math.sin(angle * 5.12 + seed * 1.3) * 0.12;
+            return n1 + n2 + n3;
+        }
+
+        // Chaikin smoothing implementation for bulbous bedrock
+        function smoothPath(points) {
+            if (points.length < 3) return points;
+            const newPoints = [];
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                const p2 = points[(i + 1) % points.length];
+                newPoints.push({ x: p1.x * 0.75 + p2.x * 0.25, y: p1.y * 0.75 + p2.y * 0.25 });
+                newPoints.push({ x: p1.x * 0.25 + p2.x * 0.75, y: p1.y * 0.25 + p2.y * 0.75 });
+            }
+            return newPoints;
+        }
+
+        function init() {
+            canvas.width = 1200;
+            canvas.height = 1600;
+            setupEventListeners();
+            generate();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('generateBtn').onclick = generate;
+            const bind = (id, targetSetting, mult) => {
+                const slider = document.getElementById(id);
+                const marker = document.getElementById('val_' + targetSetting);
+                slider.oninput = (e) => {
+                    const val = parseInt(e.target.value);
+                    marker.innerText = val;
+                    settings[targetSetting] = mult ? mult(val) : val;
+                    generate();
+                };
+                marker.innerText = slider.value;
+            };
+
+            // Mapping 1-10 to logic ranges
+            bind('stoneScaleSlider', 'stoneScale', v => (v - 1) / 9);
+            bind('stoneDetailSlider', 'stoneDetail', v => (v - 1) / 9);
+            bind('stoneWeightSlider', 'stoneWeight', v => v);
+            bind('bedrockErosionSlider', 'bedrockErosion', v => (v - 1) * 6);
+            
+            bind('densitySlider', 'density', v => Math.floor(v * 1.6));
+            bind('markingScaleSlider', 'markingScale', v => v);
+            bind('markingWeightSlider', 'markingWeight', v => v);
+            bind('artifactErosionSlider', 'artifactErosion', v => (v - 1) * 6);
+            
+            bind('connDensitySlider', 'connDensity', v => (v - 1) / 9);
+            bind('connDetailSlider', 'connDetail', v => (v - 1) / 9);
+            bind('connWeightSlider', 'connWeight', v => v);
+            bind('linkErosionSlider', 'linkErosion', v => (v - 1) * 6);
+
+            document.getElementById('downloadBtn').onclick = () => {
+                const link = document.createElement('a');
+                link.download = `petroglyph-${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            };
+        }
+
+        function generate() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = 'black';
+            ctx.fillStyle = 'black';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            const points = [];
+            const anchors = [{x: 0, y: 0}, {x: (Math.random()-0.5)*300, y: (Math.random()-0.5)*500}];
+
+            // COLLISION AVOIDANCE
+            for (let i = 0; i < settings.density; i++) {
+                let foundSpot = false;
+                let attempts = 0;
+                while(!foundSpot && attempts < 100) {
+                    const a = anchors[Math.floor(Math.random() * anchors.length)];
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.pow(Math.random(), 0.8) * 700;
+                    const radius = (30 + Math.random() * 60) * (settings.markingScale * 0.35);
+                    
+                    const testP = {
+                        x: a.x + Math.cos(angle) * dist,
+                        y: a.y + Math.sin(angle) * dist,
+                        r: radius,
+                        seed: Math.random() * 9000,
+                        distortion: (settings.artifactErosion / 60) * 1.5,
+                        scaleX: 1.0 + (Math.random() - 0.5) * (settings.artifactErosion / 30),
+                        scaleY: 1.0 + (Math.random() - 0.5) * (settings.artifactErosion / 30),
+                        rotation: Math.random() * Math.PI,
+                        cupScale: 0.15 + (Math.random() * 0.3)
+                    };
+
+                    let collision = false;
+                    for(const existingP of points) {
+                        const d = Math.sqrt((testP.x - existingP.x)**2 + (testP.y - existingP.y)**2);
+                        if (d < (testP.r + existingP.r) * 1.3) {
+                            collision = true;
+                            break;
+                        }
+                    }
+
+                    if(!collision) {
+                        points.push(testP);
+                        foundSpot = true;
+                    }
+                    attempts++;
+                }
+            }
+
+            // GET BOUNDS
+            const shellPoints = getRawShellPath(points);
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            shellPoints.forEach(p => {
+                minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+                minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+            });
+            const contentW = maxX - minX, contentH = maxY - minY;
+            const targetW = canvas.width - settings.safetyPadding, targetH = canvas.height - settings.safetyPadding;
+            const scale = Math.min(targetW / contentW, targetH / contentH);
+
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(scale, scale);
+            ctx.translate(-(minX + contentW/2), -(minY + contentH/2));
+
+            // Phase 1: Bedrock
+            ctx.shadowColor = 'black';
+            ctx.shadowBlur = settings.bedrockErosion;
+            drawShellFromPath(shellPoints);
+
+            // Phase 2: Connections
+            ctx.shadowBlur = settings.linkErosion;
+            if (settings.density > 1 && settings.connDensity > 0) {
+                points.forEach((p1, i) => {
+                    points.slice(i + 1).forEach(p2 => {
+                        const d = Math.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2);
+                        if (d < 650 && Math.random() < settings.connDensity) {
+                            drawWanderingLine(p1.x, p1.y, p2.x, p2.y);
+                        }
+                    });
+                });
+            }
+
+            // Phase 3: Markings
+            ctx.shadowBlur = settings.artifactErosion;
+            points.forEach(p => {
+                const r1 = p.r * (1.1 + Math.random() * 0.2);
+                const weight = 2 + (settings.markingWeight * 2) + (settings.artifactErosion / 4);
+                drawOrganicArtifact(p, r1, weight, false, p.seed);
+                drawOrganicArtifact(p, p.r * p.cupScale, weight * 0.7, true, p.seed + 100);
+                if (Math.random() > 0.8) {
+                    drawOrganicArtifact(p, r1 * 1.4, weight * 0.5, false, p.seed * 1.5);
+                }
+            });
+
+            ctx.restore();
+            ctx.shadowBlur = 0; 
+            applyThreshold();
+        }
+
+        function getRawShellPath(points) {
+            let hull = [];
+            const steps = 45; 
+            let avgX = 0, avgY = 0;
+            if (points.length > 0) {
+                points.forEach(p => { avgX += p.x; avgY += p.y; });
+                avgX /= points.length; avgY /= points.length;
+            }
+
+            for (let i = 0; i < steps; i++) {
+                const angle = (i / steps) * Math.PI * 2;
+                const dx = Math.cos(angle), dy = Math.sin(angle);
+                let reach = 0;
+                if (points.length > 0) {
+                    points.forEach(p => {
+                        const dot = (p.x - avgX) * dx + (p.y - avgY) * dy;
+                        if (dot > reach) reach = dot + p.r;
+                    });
+                } else reach = 400;
+                
+                const targetR = reach * 1.1 + (settings.stoneScale * 600);
+                const noise = smoothOrganicNoise(angle, 42) * 500 * settings.stoneDetail;
+                hull.push({ x: avgX + dx * (targetR + noise), y: avgY + dy * (targetR + noise) });
+            }
+
+            let smoothed = hull;
+            const passes = Math.max(1, 4 - Math.floor(settings.stoneDetail * 2.5));
+            for(let j=0; j<passes; j++) smoothed = smoothPath(smoothed);
+            return smoothed;
+        }
+
+        function drawShellFromPath(path) {
+            ctx.beginPath();
+            path.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+            ctx.closePath(); 
+            ctx.lineWidth = 4 + (settings.stoneWeight * 3);
+            ctx.stroke();
+        }
+
+        function drawOrganicArtifact(p, radius, baseWidth, isFilled, seed) {
+            const steps = 100;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.scale(p.scaleX, p.scaleY);
+            ctx.beginPath();
+            for (let i = 0; i <= steps; i++) {
+                const angle = (i / steps) * Math.PI * 2;
+                const n = smoothOrganicNoise(angle, seed) * radius * p.distortion * 0.8;
+                const r = radius + n;
+                const x = Math.cos(angle) * r, y = Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.lineWidth = baseWidth / Math.max(p.scaleX, p.scaleY);
+            if (isFilled) ctx.fill(); else ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawWanderingLine(x1, y1, x2, y2) {
+            const dist = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+            const steps = Math.floor(dist / 8);
+            const seed = x1 * 0.1 + y1 * 0.4;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            const baseWeight = 2 + (settings.connWeight * 3.5);
+            for (let i = 1; i <= steps; i++) {
+                const t = i / steps;
+                let bx = x1 + (x2 - x1) * t, by = y1 + (y2 - y1) * t;
+                const angle = Math.atan2(y2-y1, x2-x1) + Math.PI/2;
+                const wander = (Math.sin(t * 8 + seed) * 80 + Math.cos(t * 15 - seed) * 45) * settings.connDetail;
+                bx += Math.cos(angle) * wander;
+                by += Math.sin(angle) * wander;
+                ctx.lineTo(bx, by);
+                ctx.lineWidth = baseWeight + Math.sin(t * 11 + seed) * (baseWeight * 0.4);
+            }
+            ctx.stroke();
+        }
+
+        function applyThreshold() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const threshold = 175; 
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+                const val = avg < threshold ? 0 : 255;
+                data[i] = data[i+1] = data[i+2] = val;
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        init();
+    </script>
+</body>
+</html>
